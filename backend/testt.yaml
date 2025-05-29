@@ -1,0 +1,1115 @@
+openapi: 3.0.0
+info:
+  title: Combined API Specification
+  version: 1.0.0
+paths:
+  /utils/test-email/:
+    post:
+      summary: Test emails
+      tags:
+      - utils
+      parameters:
+      - name: email_to
+        in: query
+        required: true
+        schema:
+          type: string
+          format: email
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+      security:
+      - OAuth2PasswordBearer: []
+  /utils/health-check/:
+    get:
+      summary: Health Check
+      tags:
+      - utils
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: boolean
+  /private/users/:
+    post:
+      summary: Create a new user.
+      tags:
+      - private
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrivateUserCreate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublic'
+  /items/:
+    get:
+      summary: Retrieve items
+      tags:
+      - items
+      parameters:
+      - name: skip
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 0
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 100
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemsPublic'
+      security:
+      - OAuth2PasswordBearer: []
+    post:
+      summary: Create new item
+      tags:
+      - items
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemCreate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemPublic'
+      security:
+      - OAuth2PasswordBearer: []
+  /items/{id}:
+    get:
+      summary: Get item by ID
+      tags:
+      - items
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemPublic'
+        '404':
+          description: Item not found
+        '400':
+          description: Not enough permissions
+      security:
+      - OAuth2PasswordBearer: []
+    put:
+      summary: Update an item
+      tags:
+      - items
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemUpdate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemPublic'
+        '404':
+          description: Item not found
+        '400':
+          description: Not enough permissions
+      security:
+      - OAuth2PasswordBearer: []
+    delete:
+      summary: Delete an item
+      tags:
+      - items
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '404':
+          description: Item not found
+        '400':
+          description: Not enough permissions
+      security:
+      - OAuth2PasswordBearer: []
+  /login/access-token:
+    post:
+      summary: Login Access Token
+      tags:
+      - login
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OAuth2PasswordRequestForm'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+        '400':
+          description: Incorrect email or password
+  /login/test-token:
+    post:
+      summary: Test Access Token
+      tags:
+      - login
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublic'
+      security:
+      - OAuth2PasswordBearer: []
+  /password-recovery/{email}:
+    post:
+      summary: Password Recovery
+      tags:
+      - login
+      parameters:
+      - name: email
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '404':
+          description: The user with this email does not exist in the system.
+  /reset-password/:
+    post:
+      summary: Reset Password
+      tags:
+      - login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewPassword'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '400':
+          description: Invalid token
+        '404':
+          description: The user with this email does not exist in the system.
+  /password-recovery-html-content/{email}:
+    post:
+      summary: HTML Content For Password Recovery
+      tags:
+      - login
+      parameters:
+      - name: email
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: string
+        '404':
+          description: The user with this username does not exist in the system.
+      security:
+      - OAuth2PasswordBearer: []
+  /api/v1/users/:
+    get:
+      summary: Retrieve users.
+      operationId: read_users_users__get
+      parameters:
+      - name: skip
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 0
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 100
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsersPublic'
+      security:
+      - OAuth2PasswordBearer: []
+    post:
+      summary: Create new user.
+      operationId: create_user_users__post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublic'
+        '400':
+          description: User with this email already exists
+      security:
+      - OAuth2PasswordBearer: []
+  /api/v1/users/me:
+    patch:
+      summary: Update own user.
+      operationId: update_user_me_users_me_patch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateMe'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublic'
+        '409':
+          description: User with this email already exists
+      security:
+      - OAuth2PasswordBearer: []
+    get:
+      summary: Get current user.
+      operationId: read_user_me_users_me_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublic'
+      security:
+      - OAuth2PasswordBearer: []
+    delete:
+      summary: Delete own user.
+      operationId: delete_user_me_users_me_delete
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '403':
+          description: Super users are not allowed to delete themselves
+      security:
+      - OAuth2PasswordBearer: []
+  /api/v1/users/me/password:
+    patch:
+      summary: Update own password.
+      operationId: update_password_me_users_me_password_patch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePassword'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '400':
+          description: Incorrect password or new password same as current
+      security:
+      - OAuth2PasswordBearer: []
+  /api/v1/users/signup:
+    post:
+      summary: Create new user without the need to be logged in.
+      operationId: register_user_users_signup_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegister'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublic'
+        '400':
+          description: User with this email already exists
+  /api/v1/users/{user_id}:
+    get:
+      summary: Get a specific user by id.
+      operationId: read_user_by_id_users__user_id__get
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublic'
+        '403':
+          description: Not enough privileges
+      security:
+      - OAuth2PasswordBearer: []
+    patch:
+      summary: Update a user.
+      operationId: update_user_users__user_id__patch
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublic'
+        '404':
+          description: User not found
+        '409':
+          description: User with this email already exists
+      security:
+      - OAuth2PasswordBearer: []
+    delete:
+      summary: Delete a user.
+      operationId: delete_user_users__user_id__delete
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '404':
+          description: User not found
+        '403':
+          description: Super users are not allowed to delete themselves
+      security:
+      - OAuth2PasswordBearer: []
+  /api/v1/login/access-token:
+    post:
+      summary: Get access token for login
+      operationId: login_access_token_login_access_token_post
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: The user name for login
+                  title: Username
+                password:
+                  type: string
+                  description: The password for login
+                  title: Password
+                grant_type:
+                  type: string
+                  description: OAuth2 grant_type
+                  title: Grant Type
+                  default: password
+                scope:
+                  type: string
+                  description: OAuth2 scope
+                  title: Scope
+                  default: ''
+                client_id:
+                  type: string
+                  description: OAuth2 client_id
+                  title: Client Id
+                client_secret:
+                  type: string
+                  description: OAuth2 client_secret
+                  title: Client Secret
+              required:
+              - username
+              - password
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    title: Access Token
+                  token_type:
+                    type: string
+                    title: Token Type
+                required:
+                - access_token
+                - token_type
+        '401':
+          description: Authentication Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    title: Detail
+                required:
+                - detail
+  /users/:
+    get:
+      summary: Retrieve users
+      tags:
+      - users
+      parameters:
+      - name: skip
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 0
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 100
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsersPublic'
+      security:
+      - OAuth2PasswordBearer: []
+    post:
+      summary: Create new user
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublic'
+        '400':
+          description: The user with this email already exists in the system.
+      security:
+      - OAuth2PasswordBearer: []
+  /users/me:
+    get:
+      summary: Get current user
+      tags:
+      - users
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublic'
+      security:
+      - OAuth2PasswordBearer: []
+    patch:
+      summary: Update own user
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateMe'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublic'
+        '409':
+          description: User with this email already exists
+      security:
+      - OAuth2PasswordBearer: []
+    delete:
+      summary: Delete own user
+      tags:
+      - users
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '403':
+          description: Super users are not allowed to delete themselves
+      security:
+      - OAuth2PasswordBearer: []
+  /users/me/password:
+    patch:
+      summary: Update own password
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePassword'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '400':
+          description: Incorrect password
+      security:
+      - OAuth2PasswordBearer: []
+  /users/signup:
+    post:
+      summary: Create new user without the need to be logged in
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegister'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublic'
+        '400':
+          description: The user with this email already exists in the system
+  /users/{user_id}:
+    get:
+      summary: Get a specific user by id
+      tags:
+      - users
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublic'
+        '403':
+          description: The user doesn't have enough privileges
+      security:
+      - OAuth2PasswordBearer: []
+    patch:
+      summary: Update a user
+      tags:
+      - users
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublic'
+        '404':
+          description: The user with this id does not exist in the system
+        '409':
+          description: User with this email already exists
+      security:
+      - OAuth2PasswordBearer: []
+    delete:
+      summary: Delete a user
+      tags:
+      - users
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '404':
+          description: User not found
+        '403':
+          description: Super users are not allowed to delete themselves
+      security:
+      - OAuth2PasswordBearer: []
+components:
+  schemas:
+    Message:
+      title: Message
+      required:
+      - message
+      type: object
+      properties:
+        message:
+          title: Message
+          type: string
+    PrivateUserCreate:
+      title: PrivateUserCreate
+      required:
+      - email
+      - password
+      - full_name
+      type: object
+      properties:
+        email:
+          title: Email
+          type: string
+        password:
+          title: Password
+          type: string
+        full_name:
+          title: Full Name
+          type: string
+        is_verified:
+          title: Is Verified
+          type: boolean
+          default: false
+    UserPublic:
+      title: UserPublic
+      required:
+      - email
+      - full_name
+      - id
+      - is_active
+      - is_superuser
+      - is_verified
+      type: object
+      properties:
+        email:
+          title: Email
+          type: string
+        full_name:
+          title: Full Name
+          type: string
+        id:
+          title: Id
+          type: string
+          format: uuid
+        is_active:
+          title: Is Active
+          type: boolean
+        is_superuser:
+          title: Is Superuser
+          type: boolean
+        is_verified:
+          title: Is Verified
+          type: boolean
+    ItemBase:
+      title: ItemBase
+      type: object
+      properties:
+        title:
+          title: Title
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          title: Description
+          type: string
+          maxLength: 255
+          nullable: true
+      required:
+      - title
+    ItemCreate:
+      title: ItemCreate
+      required:
+      - name
+      type: object
+      properties:
+        name:
+          title: Name
+          type: string
+        description:
+          title: Description
+          type: string
+          nullable: true
+        price:
+          title: Price
+          type: number
+          format: float
+    ItemPublic:
+      title: ItemPublic
+      required:
+      - name
+      - owner_id
+      - id
+      type: object
+      properties:
+        name:
+          title: Name
+          type: string
+        description:
+          title: Description
+          type: string
+          nullable: true
+        price:
+          title: Price
+          type: number
+          format: float
+        owner_id:
+          title: Owner Id
+          type: string
+          format: uuid
+        id:
+          title: Id
+          type: string
+          format: uuid
+    ItemsPublic:
+      title: ItemsPublic
+      required:
+      - data
+      - count
+      type: object
+      properties:
+        data:
+          title: Data
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemPublic'
+        count:
+          title: Count
+          type: integer
+    ItemUpdate:
+      title: ItemUpdate
+      type: object
+      properties:
+        name:
+          title: Name
+          type: string
+        description:
+          title: Description
+          type: string
+          nullable: true
+        price:
+          title: Price
+          type: number
+          format: float
+    NewPassword:
+      title: NewPassword
+      required:
+      - token
+      - new_password
+      type: object
+      properties:
+        token:
+          title: Token
+          type: string
+        new_password:
+          title: New Password
+          type: string
+    Token:
+      title: Token
+      required:
+      - access_token
+      - token_type
+      type: object
+      properties:
+        access_token:
+          title: Access Token
+          type: string
+        token_type:
+          title: Token Type
+          type: string
+    UserBase:
+      title: UserBase
+      required:
+      - email
+      type: object
+      properties:
+        email:
+          title: Email
+          type: string
+          format: email
+          maxLength: 255
+        is_active:
+          title: Is Active
+          type: boolean
+          default: true
+        is_superuser:
+          title: Is Superuser
+          type: boolean
+          default: false
+        full_name:
+          title: Full Name
+          type: string
+          maxLength: 255
+    UserCreate:
+      title: UserCreate
+      required:
+      - email
+      - password
+      - full_name
+      type: object
+      properties:
+        email:
+          title: Email
+          type: string
+        password:
+          title: Password
+          type: string
+        full_name:
+          title: Full Name
+          type: string
+        is_active:
+          title: Is Active
+          type: boolean
+          default: true
+        is_superuser:
+          title: Is Superuser
+          type: boolean
+          default: false
+        is_verified:
+          title: Is Verified
+          type: boolean
+          default: false
+    UsersPublic:
+      title: UsersPublic
+      required:
+      - data
+      - count
+      type: object
+      properties:
+        data:
+          title: Data
+          type: array
+          items:
+            $ref: '#/components/schemas/UserPublic'
+        count:
+          title: Count
+          type: integer
+    UserUpdateMe:
+      title: UserUpdateMe
+      type: object
+      properties:
+        email:
+          title: Email
+          type: string
+        full_name:
+          title: Full Name
+          type: string
+    UpdatePassword:
+      title: UpdatePassword
+      required:
+      - current_password
+      - new_password
+      type: object
+      properties:
+        current_password:
+          title: Current Password
+          type: string
+        new_password:
+          title: New Password
+          type: string
+    UserRegister:
+      title: UserRegister
+      required:
+      - email
+      - password
+      - full_name
+      type: object
+      properties:
+        email:
+          title: Email
+          type: string
+        password:
+          title: Password
+          type: string
+        full_name:
+          title: Full Name
+          type: string
+    UserUpdate:
+      title: UserUpdate
+      type: object
+      properties:
+        email:
+          title: Email
+          type: string
+        full_name:
+          title: Full Name
+          type: string
+        password:
+          title: Password
+          type: string
+        is_active:
+          title: Is Active
+          type: boolean
+        is_superuser:
+          title: Is Superuser
+          type: boolean
+        is_verified:
+          title: Is Verified
+          type: boolean
+    EmailData:
+      title: EmailData
+      required:
+      - subject
+      - html_content
+      type: object
+      properties:
+        subject:
+          title: Subject
+          type: string
+        html_content:
+          title: Html Content
+          type: string
+    OAuth2PasswordRequestForm:
+      title: OAuth2PasswordRequestForm
+      type: object
+      properties:
+        username:
+          title: Username
+          type: string
+        password:
+          title: Password
+          type: string
+        scope:
+          title: Scope
+          type: string
+          default: ''
+        grant_type:
+          title: Grant Type
+          type: string
+          default: password
+        client_id:
+          title: Client Id
+          type: string
+        client_secret:
+          title: Client Secret
+          type: string
